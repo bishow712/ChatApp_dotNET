@@ -59,7 +59,7 @@ public class RegistrationController : ControllerBase
         try
         {
             SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            conn.Open();
+            // conn.Open();
             SqlDataAdapter da = new SqlDataAdapter("select * from dbo.UserRegistration where Email='"+registration.Email+"' and Password='"+registration.Password+"'",conn);
             DataTable dt = new DataTable();
             da.Fill(dt);
@@ -92,8 +92,9 @@ public class RegistrationController : ControllerBase
 
             while (dr.Read())
             {
-                string name = dr.GetString(dr.GetOrdinal("Name"));
-                nameList.Add(name);
+                // string name = dr.GetString(dr.GetOrdinal("Name"));
+                // nameList.Add(name);
+                nameList.Add(reader["Name"]);
             }
 
             return Ok(nameList);        
