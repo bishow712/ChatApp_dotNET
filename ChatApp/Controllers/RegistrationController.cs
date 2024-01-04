@@ -75,6 +75,42 @@ public class RegistrationController : ControllerBase
         }
     }
 
+    [HttpPost]
+    [Route("update")]
+    public string Update(Registration registration)
+    {
+        try
+        {
+            SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+
+            conn.Open();      
+
+            SqlCommand cmd = new SqlCommand("Update dbo.UserRegistration set Name=@Name, Email=@Email, Password=@Password where Id=@Id", conn);
+            
+            cmd.Parameters.AddWithValue("@Name", registration.Name);
+            cmd.Parameters.AddWithValue("@Email", registration.Email);
+            cmd.Parameters.AddWithValue("@Password", registration.Password);
+            cmd.Parameters.AddWithValue("@Id", registration.Id);
+
+            // conn.Close();
+
+            int rowsAffected = cmd.ExecuteNonQuery();
+
+            if (rowsAffected > 0)
+            {
+                return "Data Updated.";
+            }
+            else
+            {
+                return "Error while updating data.";
+            }
+        }
+        catch(Exception ex)
+        {
+            return "Exception: " + ex.Message;
+        }
+    }
+
     [HttpGet]
     [Route("users")]
     public ActionResult<IEnumerable<string>> Users()
@@ -94,7 +130,7 @@ public class RegistrationController : ControllerBase
             {
                 // string name = dr.GetString(dr.GetOrdinal("Name"));
                 // nameList.Add(name);
-                nameList.Add(reader["Name"]);
+                nameList.Add(dr["Name"].ToString());
             }
 
             return Ok(nameList);        
