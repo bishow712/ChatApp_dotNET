@@ -37,3 +37,14 @@ C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\runtimes\win-x86\n
 C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\runtimes\unix\lib\netcoreapp2.1\System.Data.SqlClient.dll
 C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll
 C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\obj\Debug\net8.0\ChatApp.sourcelink.json
+C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\Microsoft.AspNet.SignalR.Core.dll
+C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\Microsoft.AspNet.SignalR.SystemWeb.dll
+C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\Microsoft.Owin.dll
+C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\Microsoft.Owin.Host.SystemWeb.dll
+C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\Microsoft.Owin.Security.dll
+C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\Newtonsoft.Json.dll
+C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\Owin.dll
+C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\Microsoft.AspNetCore.Connections.Abstractions.dll
+C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\Microsoft.AspNetCore.SignalR.Common.dll
+C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\Microsoft.Extensions.Features.dll
+C:\Users\Bidhya\Desktop\.NET\chatApp\ChatApp\bin\Debug\net8.0\Microsoft.Extensions.Options.dll

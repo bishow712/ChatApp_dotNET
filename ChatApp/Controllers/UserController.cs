@@ -21,21 +21,22 @@ public class UserController : ControllerBase
     // Register the user to the database
     [HttpPost]
     [Route("registration")]
-    public ActionResult<object> Registration([FromQuery(Name = "UserName")] string name, [FromQuery(Name = "Email"), DataType(DataType.EmailAddress)] string email,
-        [FromQuery(Name = "Password"), DataType(DataType.Password)] string password)
+    //public ActionResult<object> Registration([FromQuery(Name = "UserName")] string name, [FromQuery(Name = "Email"), DataType(DataType.EmailAddress)] string email,
+    //    [FromQuery(Name = "Password"), DataType(DataType.Password)] string password)
+    public IActionResult Registration(RegistrationModel registration)
     {
         try
         {
-            
+
             SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
 
-            conn.Open();      
+            conn.Open();
 
             SqlCommand cmd = new SqlCommand("INSERT INTO dbo.UserRegistration (Name, Email, Password) VALUES (@Name, @Email, @Password)", conn);
-            
-            cmd.Parameters.AddWithValue("@Name", name);
-            cmd.Parameters.AddWithValue("@Email", email);
-            cmd.Parameters.AddWithValue("@Password", password);
+
+            cmd.Parameters.AddWithValue("@Name", registration.Name);
+            cmd.Parameters.AddWithValue("@Email", registration.Email);
+            cmd.Parameters.AddWithValue("@Password", registration.Password);
 
             // conn.Close();
 
@@ -58,28 +59,28 @@ public class UserController : ControllerBase
         }
     }
 
-    // Login using email and password (Info passing through URL Route)
+    // Login using email and password
     [HttpPost]
     [Route("login/{email}/{password}")]
-    public ActionResult<object> Login([FromRoute (Name = "email"), DataType(DataType.EmailAddress)] string email,
+    public ActionResult<object> Login([FromRoute(Name = "email"), DataType(DataType.EmailAddress)] string email,
         [FromRoute(Name = "password"), DataType(DataType.Password)] string password)
     {
         try
         {
             SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             // conn.Open();
-            SqlDataAdapter da = new SqlDataAdapter("select * from dbo.UserRegistration where Email='"+email+"' and Password='"+password+"'",conn);
+            SqlDataAdapter da = new SqlDataAdapter("select * from dbo.UserRegistration where Email='" + email + "' and Password='" + password + "'", conn);
 
             DataTable dt = new DataTable();
-            
+
             da.Fill(dt);
 
             // Create a collection to hold objects
             List<object> resultList = new List<object>();
-            
-            if(dt.Rows.Count>0){
+
+            if (dt.Rows.Count > 0) {
                 // return "Data Found";
-                foreach(DataRow row in dt.Rows)
+                foreach (DataRow row in dt.Rows)
                 {
                     var userObject = new
                     {
@@ -93,17 +94,103 @@ public class UserController : ControllerBase
                 }
                 return resultList;
             } else {
-                return BadRequest("Data not Found") ;
+                return BadRequest("Data not Found");
             }
         }
         catch (Exception ex)
         {
-           return StatusCode(500, $"Exception: {ex.Message}");
+            return StatusCode(500, $"Exception: {ex.Message}");
+        }
+    }
+
+    // Get all the users info
+    [HttpGet("users")]
+    public ActionResult<List<string>> Users()
+    {
+        try
+        {
+            List<Dictionary<string, object>> nameList = new List<Dictionary<string, object>>();
+
+            SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+
+            conn.Open();
+
+            SqlCommand cmd = new SqlCommand("SELECT Id, Name, Email From UserRegistration", conn);
+
+            SqlDataReader dr = cmd.ExecuteReader();
+
+            while (dr.Read())
+            {
+                int Id = dr.GetInt32(dr.GetOrdinal("Id"));
+                string name = dr.GetString(dr.GetOrdinal("Name"));
+                string email = dr.GetString(dr.GetOrdinal("Email"));
+
+
+                Dictionary<string, object> user = new Dictionary<string, object>
+                {
+                    {"UserID", Id},
+                    {"UserName", name},
+                    {"Email", email }
+                };
+
+                nameList.Add(user);
+                // nameList.Add(dr["Name"].ToString());
+            }
+
+            return Ok(nameList);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Exception: {ex.Message}");
+        }
+    }
+
+    // Get the user info by Id
+    [HttpGet("{userId}")]
+    public IActionResult UserById(int userId)
+    {
+        try
+        {
+            List<Dictionary<string, object>> nameList = new List<Dictionary<string, object>>();
+
+            SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+
+            conn.Open();
+
+            SqlCommand cmd = new SqlCommand("SELECT Id, Name, Email From UserRegistration where Id = @userId", conn);
+            
+            cmd.Parameters.AddWithValue("@userId", userId);
+
+            SqlDataReader dr = cmd.ExecuteReader();
+
+            while (dr.Read())
+            {
+                int Id = dr.GetInt32(dr.GetOrdinal("Id"));
+                string name = dr.GetString(dr.GetOrdinal("Name"));
+                string email = dr.GetString(dr.GetOrdinal("Email"));
+
+
+                Dictionary<string, object> user = new Dictionary<string, object>
+                {
+                    {"UserID", Id},
+                    {"UserName", name},
+                    {"Email", email }
+                };
+
+                nameList.Add(user);
+                // nameList.Add(dr["Name"].ToString());
+            }
+
+            return Ok(nameList);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Exception: {ex.Message}");
         }
     }
 
     // Update the user info
-    [HttpPost]
+    [HttpPut]
     [Route("update")]
     public ActionResult<object> Update(UserModel user)
     {
@@ -140,9 +227,8 @@ public class UserController : ControllerBase
     }
 
     //Delete the user
-    [HttpPost]
-    [Route("delete")]
-    public ActionResult<object> Delete([FromQuery(Name = "Delete")] int UserId) 
+    [HttpDelete("delete/{userId}")]
+    public ActionResult<object> Delete(int UserId) 
     {
         try
         {
@@ -175,48 +261,6 @@ public class UserController : ControllerBase
         catch (Exception ex)
         {
             return BadRequest("Exception: " + ex.Message);
-        }
-    }
-
-    // Get all the users id and name
-    [HttpGet]
-    [Route("getusers")]
-    public ActionResult<List<string>> Users()
-    {
-        try{
-            List<Dictionary<string, object>> nameList = new List<Dictionary<string, object>>();
-
-            SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        
-            conn.Open();
-
-            SqlCommand cmd = new SqlCommand("SELECT Id, Name, Email From UserRegistration", conn);
-
-            SqlDataReader dr = cmd.ExecuteReader();
-
-            while (dr.Read())
-            {
-                int Id = dr.GetInt32(dr.GetOrdinal("Id"));
-                string name = dr.GetString(dr.GetOrdinal("Name"));
-                string email = dr.GetString(dr.GetOrdinal("Email"));
-
-
-                Dictionary<string, object> user = new Dictionary<string, object>
-                {
-                    {"UserID", Id},
-                    {"UserName", name},
-                    {"Email", email }
-                };
-
-                nameList.Add(user);
-                // nameList.Add(dr["Name"].ToString());
-            }
-
-            return Ok(nameList);        
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Exception: {ex.Message}");
         }
     }
 }

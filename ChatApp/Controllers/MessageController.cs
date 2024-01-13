@@ -1,6 +1,8 @@
 ﻿using ChatApp.Models;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using System.ComponentModel.DataAnnotations;
 using System.Data.SqlClient;
 
@@ -11,16 +13,18 @@ namespace ChatApp.Controllers
     public class MessageController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+        private readonly IHubContext<MessageHub> _hubContext;
 
-        public MessageController(IConfiguration configuration)
+        public MessageController(IConfiguration configuration, IHubContext<MessageHub> hubContext)
         {
             _configuration = configuration;
+            _hubContext = hubContext;
         }
 
         // Send message
         [HttpPost]
         [Route("createmessage")]
-        public ActionResult<object> CreateMessage([FromQuery(Name = "Sender")] string SenderMail, [FromQuery(Name = "Receiver")] string ReceiverMail, [FromQuery(Name = "Content")] string Content)
+        public async Task<IActionResult> CreateMessage([FromQuery(Name = "Sender")] int SenderId, [FromQuery(Name = "Receiver")] int ReceiverId, [FromQuery(Name = "Content")] string Content)
         {
             try
             {
@@ -28,10 +32,10 @@ namespace ChatApp.Controllers
 
                 conn.Open();
 
-                SqlCommand cmd = new SqlCommand("INSERT INTO dbo.Message (SenderMail, ReceiverMail, Content) VALUES (@Sender, @Receiver, @Content)", conn);
+                SqlCommand cmd = new SqlCommand("INSERT INTO dbo.Message (SenderId, ReceiverId, Content) VALUES (@Sender, @Receiver, @Content)", conn);
 
-                cmd.Parameters.AddWithValue("@Sender", SenderMail);
-                cmd.Parameters.AddWithValue("@Receiver", ReceiverMail);
+                cmd.Parameters.AddWithValue("@Sender", SenderId);
+                cmd.Parameters.AddWithValue("@Receiver", ReceiverId);
                 cmd.Parameters.AddWithValue("@Content", Content);
 
                 int rowsAffected = cmd.ExecuteNonQuery();
@@ -40,6 +44,9 @@ namespace ChatApp.Controllers
 
                 if (rowsAffected > 0)
                 {
+                    // Notify clients about the new message
+                    _hubContext.Clients.All.SendAsync("Message", new { SenderId, ReceiverId, Content });
+
                     return Ok("Message Sent.");
                 }
                 else
@@ -55,8 +62,8 @@ namespace ChatApp.Controllers
 
         // Fetch Messages
         [HttpGet]
-        [Route("getmessages")]
-        public ActionResult<object> FetchMessages([FromQuery(Name="Sender")] string SenderMail, [FromQuery(Name = "Receiver")] string ReceiverMail)
+        [Route("getmessages/{user1}/{user2}")]
+        public ActionResult<object> FetchMessages(int user1, int user2)
         {
             try
             {
@@ -66,24 +73,24 @@ namespace ChatApp.Controllers
 
                 conn.Open();
 
-                SqlCommand cmd = new SqlCommand("select * from Message where SenderMail = @Sender and ReceiverMail = @Receiver or SenderMail = @Receiver and ReceiverMail = @Sender", conn);
+                SqlCommand cmd = new SqlCommand("select * from Message where SenderId = @user1 and ReceiverId = @user2 or SenderId = @user2 and ReceiverId = @user1", conn);
 
-                cmd.Parameters.AddWithValue("@Sender", SenderMail);
-                cmd.Parameters.AddWithValue("@Receiver", ReceiverMail);
+                cmd.Parameters.AddWithValue("@user1", user1);
+                cmd.Parameters.AddWithValue("@user2", user2);
 
                 SqlDataReader dr = cmd.ExecuteReader();
 
                 while (dr.Read())
                 {
-                    string Sender = dr.GetString(dr.GetOrdinal("SenderMail"));
-                    string Receiver = dr.GetString(dr.GetOrdinal("ReceiverMail"));
+                    int Sender = dr.GetInt32(dr.GetOrdinal("SenderId"));
+                    int Receiver = dr.GetInt32(dr.GetOrdinal("ReceiverId"));
                     string Content = dr.GetString(dr.GetOrdinal("Content"));
                     DateTime Timestamp = dr.GetDateTime(dr.GetOrdinal("Timestamp"));
 
                     Dictionary<string, object> row = new Dictionary<string, object>
                     {
-                        {"SenderMail", Sender},
-                        {"ReceiverMail", Receiver},
+                        {"SenderId", Sender},
+                        {"ReceiverId", Receiver},
                         {"Content", Content},
                         {"Timestamp", Timestamp},
                         
@@ -105,8 +112,8 @@ namespace ChatApp.Controllers
 
         // Fetch Messages
         [HttpGet]
-        [Route("messagereceivers")]
-        public ActionResult<object> Receivers([FromQuery(Name = "Sender")] string SenderMail)
+        [Route("{senderId}/messagereceivers")]
+        public ActionResult<object> Receivers(int senderId)
         {
             try
             {
@@ -116,15 +123,15 @@ namespace ChatApp.Controllers
 
                 conn.Open();
 
-                SqlCommand cmd = new SqlCommand("select distinct ReceiverMail from Message where SenderMail = @Sender", conn);
+                SqlCommand cmd = new SqlCommand("select distinct ReceiverId from Message where SenderId = @Sender", conn);
 
-                cmd.Parameters.AddWithValue("@Sender", SenderMail);
+                cmd.Parameters.AddWithValue("@Sender", senderId);
           
                 SqlDataReader dr = cmd.ExecuteReader();
 
-                while (dr.Read())
+                while(dr.Read())
                 {               
-                    string Receiver = dr.GetString(dr.GetOrdinal("ReceiverMail"));                  
+                    string Receiver = dr.GetString(dr.GetOrdinal("ReceiverId"));                  
 
                     Receivers.Add(Receiver);
                 }
