@@ -5,9 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using System.ComponentModel.DataAnnotations;
 using System.Data.SqlClient;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ChatApp.Controllers
-{
+{    
     [Route("api/message")]
     [ApiController]
     public class MessageController : ControllerBase
@@ -110,7 +111,7 @@ namespace ChatApp.Controllers
             }
         }
 
-        // Fetch Messages
+        // Fetch Message Receivers
         [HttpGet]
         [Route("{senderId}/messagereceivers")]
         public ActionResult<object> Receivers(int senderId)
@@ -145,6 +146,16 @@ namespace ChatApp.Controllers
             {
                 return BadRequest("Error: " + ex.Message);
             }
+        }
+
+        // Authorize test
+        [Authorize]
+        [HttpGet("secure-data")]
+        public IActionResult GetSecureData()
+        {
+            // Only authenticated users can access this endpoint
+            // Access user claims using User.Claims
+            return Ok("This is secure data!");
         }
     }
 }

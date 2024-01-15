@@ -1,9 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Data.SqlClient;
+using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Security.Claims;
+using System.Text;
 using ChatApp.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ChatApp.Controllers;
 
@@ -79,6 +83,23 @@ public class UserController : ControllerBase
             List<object> resultList = new List<object>();
 
             if (dt.Rows.Count > 0) {
+                var user = dt.Rows[0];
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes("dglbgeozqnofjmmrmxlzqfrrrymsqrcf");
+                var tokenDecriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                        new Claim(ClaimTypes.Name, user["Id"].ToString()),
+                    }),
+                    Expires = DateTime.UtcNow.AddDays(4),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+                };
+
+                var token = tokenHandler.CreateToken(tokenDecriptor);
+                var tokenString = tokenHandler.WriteToken(token);
+
                 // return "Data Found";
                 foreach (DataRow row in dt.Rows)
                 {
@@ -87,7 +108,8 @@ public class UserController : ControllerBase
                         Id = row["Id"],
                         Name = row["Name"],
                         Email = row["Email"],
-                        Password = row["Password"]
+                        //Password = row["Password"],
+                        Token = tokenString,
                     };
 
                     resultList.Add(userObject);
@@ -227,8 +249,8 @@ public class UserController : ControllerBase
     }
 
     //Delete the user
-    [HttpDelete("delete/{userId}")]
-    public ActionResult<object> Delete(int UserId) 
+    [HttpDelete("{userId}")]
+    public ActionResult<object> Delete(int userId) 
     {
         try
         {
@@ -237,19 +259,19 @@ public class UserController : ControllerBase
             conn.Open();
 
             SqlCommand cmdForUser = new SqlCommand("delete from UserRegistration where Id = @UserId", conn);
-            SqlCommand cmdForMessage = new SqlCommand("delete from Message where SenderId = @UserId or ReceiverId = @UserId", conn);
+            //SqlCommand cmdForMessage = new SqlCommand("delete from Message where SenderId = @userId or ReceiverId = @userId", conn);
 
-            cmdForUser.Parameters.AddWithValue("@UserId", UserId);
-            cmdForMessage.Parameters.AddWithValue("@UserId", UserId);
+            cmdForUser.Parameters.AddWithValue("@UserId", userId);
+            //cmdForMessage.Parameters.AddWithValue("@userId", userId);
 
             // conn.Close();
 
             int rowsAffectedInUser = cmdForUser.ExecuteNonQuery();
-            int rowsAffectedInMessage = cmdForMessage.ExecuteNonQuery();
+            //int rowsAffectedInMessage = cmdForMessage.ExecuteNonQuery();
 
             conn.Close();
 
-            if (rowsAffectedInUser > 0 || rowsAffectedInMessage > 0)
+            if (rowsAffectedInUser > 0 /*|| rowsAffectedInMessage > 0*/)
             {
                 return Ok("User Deleted.");
             }
