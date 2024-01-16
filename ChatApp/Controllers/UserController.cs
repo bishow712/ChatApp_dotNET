@@ -65,15 +65,14 @@ public class UserController : ControllerBase
 
     // Login using email and password
     [HttpPost]
-    [Route("login/{email}/{password}")]
-    public ActionResult<object> Login([FromRoute(Name = "email"), DataType(DataType.EmailAddress)] string email,
-        [FromRoute(Name = "password"), DataType(DataType.Password)] string password)
+    [Route("login")]
+    public ActionResult<object> Login(LoginModel login)
     {
         try
         {
             SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             // conn.Open();
-            SqlDataAdapter da = new SqlDataAdapter("select * from dbo.UserRegistration where Email='" + email + "' and Password='" + password + "'", conn);
+            SqlDataAdapter da = new SqlDataAdapter("select * from dbo.UserRegistration where Email='" + login.Email + "' and Password='" + login.Password + "'", conn);
 
             DataTable dt = new DataTable();
 

@@ -9,6 +9,12 @@ namespace ChatApp.Models
         public string Password { get; set; }
     }
 
+    public class LoginModel
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+
     public class UserModel
     {
         public int Id { get; set; }
