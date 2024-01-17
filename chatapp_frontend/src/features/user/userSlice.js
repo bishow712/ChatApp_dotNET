@@ -28,6 +28,10 @@ export const loginUser = createAsyncThunk('user/login', async (user, thunkAPI)=>
     }
 })
 
+export const logoutUser = createAsyncThunk('user/logout', async () => {
+    await userService.logoutUser()
+})
+
 export const userSlice = createSlice({
     name: 'user',
     initialState,
@@ -42,6 +46,7 @@ export const userSlice = createSlice({
         .addCase(registerUser.fulfilled, (state, action) => {
             state.isLoading = false
             state.isSuccess = true
+            state.isError = false
             state.registerdUser = action.payload
         })
         .addCase(registerUser.rejected, (state,action)=>{
@@ -55,6 +60,7 @@ export const userSlice = createSlice({
         .addCase(loginUser.fulfilled, (state, action) => {
             state.isLoading = false
             state.isSuccess = true
+            state.isError = false
             state.loggedInUser = action.payload
         })
         .addCase(loginUser.rejected, (state,action)=>{

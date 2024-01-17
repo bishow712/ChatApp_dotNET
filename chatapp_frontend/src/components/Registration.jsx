@@ -74,7 +74,7 @@ function Registration() {
     return (
         <div>
         <section className='heading text-center mt-4'>
-            <h1>
+            <h1>             
                 Register
             </h1>
             <p>Please Create an account.</p>
@@ -95,13 +95,15 @@ function Registration() {
                     <input type="password" className='form-control' id='password2' name='password2' value={password2} placeholder='Confirm password.' onChange={onChange} />
                 </div>
                 <div className="form-group">
-                    <button type="submit" className='btn btn-block' style={{border: "1px solid black"}}>Register</button>
+                    <button type="submit" className='btn btn-outline-secondary btn-block' style={{border: "1px solid grey"}}>Register</button>
                 </div>
             </form>
         </section>
 
-        <section className='text-center mt-4'>
-            <p className=''>Already have an account. <Link to='/login' className='link-offset-2 link-opacity-75-hover'>Login Here</Link></p>
+        <section className='text-center mt-4'>                       
+            {(JSON.parse(localStorage.getItem('user'))) 
+            ? <p>You are logged in. <Link to='/' className='link-offset-2 link-opacity-75-hover'>Visit Your Messagebox</Link></p> 
+            : <p className=''>Already have an account. <Link to='/login' className='link-offset-2 link-opacity-75-hover'>Login Here</Link></p> }
             <p>Don't want to register. <Link to='/groupmessage' className='link-offset-2 link-opacity-75-hover'>Join Group Message</Link></p>
         </section>
         </div>

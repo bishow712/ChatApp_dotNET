@@ -46,7 +46,6 @@ export default function GroupMessage() {
         connection.on("ReceiveGroupMessage", (updatedData)=>{
             console.log(updatedData)
             setYourMessage((prevMessages) => [...prevMessages, updatedData]);
-            console.log(yourMessage)
         })
 
         // Cleanup function
@@ -78,41 +77,62 @@ export default function GroupMessage() {
     if(isLoading){
         return (
             <div>
-                <h1>Loading....</h1>
+                <div className='position-absolute top-50 start-50 translate-middle'>
+                    <div className="loader"></div>
+                </div>
             </div>
-        )
+        )        
     }
 
     if(isSuccess){
         return (           
             <div>      
-                <section className='text-center mt-4 d-flex justify-content-around'>
-                    <p>Don't have an account. <Link to='/register' className='link-offset-2 link-opacity-75-hover'>Register Here</Link></p>
-                    <p>Already have an account. <Link to='/login' className='link-offset-2 link-opacity-75-hover'>Login Here</Link></p>
+                <section className='text-center mt-2 d-flex justify-content-around'>
+                    <p>Don't have an account. <br /> <Link to='/register' className='link-offset-2 link-opacity-75-hover'>Register Here</Link></p>
+                    {(JSON.parse(localStorage.getItem('user'))) 
+                    ? <p>You are logged in. <br /> <Link to='/' className='link-offset-2 link-opacity-75-hover'>Visit Your Messagebox</Link></p> 
+                    : <p>Already have an account. <br /> <Link to='/login' className='link-offset-2 link-opacity-75-hover'>Login Here</Link></p>
+                    }
                 </section>
 
-                <div className="input-group mt-3 mb-3">
+                <div className="input-group mt-2 mb-2">
                     <label htmlFor="senderName" className="input-group-text">Your Name : </label>
                     <input type="text" autoComplete="off" className='form-control' id='senderName' name='senderName' value={senderName} placeholder='Enter your name.' onChange={(e)=>setSenderName(e.target.value)} />
                 </div>
 
-                <div style={{height: '68vh', overflowY: 'auto'}} ref={chatContainerRef}>
+                <div style={{height: '70vh', overflowY: 'auto'}} ref={chatContainerRef}>
                 <div>
                     {getGroupMessage.map((m)=>(
-                        <p><strong>{m.Sender}</strong> : {m.Message}</p>
+                        <div className='pt-3'>
+                            <fieldset className=" px-2 pb-2">
+                                <legend className="float-none w-auto text-smaller"><strong>{m.Sender}</strong></legend>
+                                {/* Icon from bootstrap */}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5"/>
+                                </svg> {m.Message}
+                            </fieldset>
+                        </div>
                     ))}
                 </div>
 
                 <div>
                     {yourMessage.map((p) => (
-                        <p><strong>{p.senderName}</strong> : {p.message}</p>
+                        <div className='pt-3'>
+                            <fieldset className=" px-2 pb-2">
+                                <legend className="float-none w-auto text-smaller"><strong>{p.senderName}</strong></legend>
+                                {/* Icon from bootstrap */}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5"/>
+                                </svg> {p.message}
+                            </fieldset>
+                        </div>
                     ))}   
                 </div>
                 </div>
 
                 <div>
                     <section>
-                        <form action="" onSubmit={onSubmit} className='input-group mt-3 mb-3'>                            
+                        <form action="" onSubmit={onSubmit} className='input-group mt-2'>                            
                             <input type="text" autoComplete="off" className='form-control' id='message' name='message' value={message} placeholder='Enter your message.' onChange={(e)=>setMessage(e.target.value)} />
                             <button type="submit" className='input-group-text d-flex justify-content-center' style={{width: "8rem"}}>Send</button>
                         </form>

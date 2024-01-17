@@ -42,6 +42,7 @@ export const groupMessageSlice = createSlice({
         .addCase(getGroupMessages.fulfilled, (state, action) => {
             state.isLoading = false
             state.isSuccess = true
+            state.isError = false
             state.getGroupMessage = action.payload
         })
         .addCase(getGroupMessages.rejected, (state,action)=>{
@@ -55,6 +56,7 @@ export const groupMessageSlice = createSlice({
         .addCase(sendGroupMessage.fulfilled, (state, action) => {
             state.isLoading = false
             state.isSuccess = true
+            state.isError = false
             state.sentGroupMessage = action.payload
         })
         .addCase(sendGroupMessage.rejected, (state,action)=>{

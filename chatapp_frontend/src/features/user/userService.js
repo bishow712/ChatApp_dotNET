@@ -16,9 +16,14 @@ const loginUser = async (userData) =>{
     return response.data
 }
 
+const logoutUser = ()=>{
+    localStorage.removeItem('user')
+}
+
 const userService = {
     registerUser,
     loginUser,
+    logoutUser,
 }
 
 export default userService

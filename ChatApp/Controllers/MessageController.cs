@@ -24,8 +24,9 @@ namespace ChatApp.Controllers
 
         // Send message
         [HttpPost]
-        [Route("createmessage")]
-        public async Task<IActionResult> CreateMessage([FromQuery(Name = "Sender")] int SenderId, [FromQuery(Name = "Receiver")] int ReceiverId, [FromQuery(Name = "Content")] string Content)
+        [Route("createmessage/{SenderId}/{ReceiverId}/{Content}")]
+        //public async Task<IActionResult> CreateMessage([FromQuery(Name = "Sender")] int SenderId, [FromQuery(Name = "Receiver")] int ReceiverId, [FromQuery(Name = "Content")] string Content)
+        public async Task<IActionResult> CreateMessage(int SenderId, int ReceiverId, string Content)
         {
             try
             {
@@ -113,12 +114,12 @@ namespace ChatApp.Controllers
 
         // Fetch Message Receivers
         [HttpGet]
-        [Route("{senderId}/messagereceivers")]
+        [Route("messagereceivers/{senderId}")]
         public ActionResult<object> Receivers(int senderId)
         {
             try
             {
-                List<string> Receivers = new List<string>();
+                List<int> Receivers = new List<int>();
 
                 SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
 
@@ -132,7 +133,7 @@ namespace ChatApp.Controllers
 
                 while(dr.Read())
                 {               
-                    string Receiver = dr.GetString(dr.GetOrdinal("ReceiverId"));                  
+                    int Receiver = dr.GetInt32(dr.GetOrdinal("ReceiverId"));                  
 
                     Receivers.Add(Receiver);
                 }
@@ -146,16 +147,6 @@ namespace ChatApp.Controllers
             {
                 return BadRequest("Error: " + ex.Message);
             }
-        }
-
-        // Authorize test
-        [Authorize]
-        [HttpGet("secure-data")]
-        public IActionResult GetSecureData()
-        {
-            // Only authenticated users can access this endpoint
-            // Access user claims using User.Claims
-            return Ok("This is secure data!");
         }
     }
 }

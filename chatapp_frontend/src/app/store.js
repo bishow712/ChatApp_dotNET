@@ -6,7 +6,7 @@ import useReducer from '../features/user/userSlice'
 export const store = configureStore({
   reducer: {
     user: useReducer,
-    message: messageReducer,
+    userMessage: messageReducer,
     groupMessage: groupMessageReducer,
   },
 });

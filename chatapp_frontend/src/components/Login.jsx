@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { loginUser } from '../features/user/userSlice'
+import { loginUser, reset } from '../features/user/userSlice'
 import { toast } from 'react-toastify'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -13,23 +13,47 @@ function Login() {
     const {email,password} = formData
 
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     
     const {loggedInUser, isLoading, isError, isSuccess, message} = useSelector((state)=>{
         return state.user
     })
+
+    useEffect(()=>{
+        if(JSON.parse(localStorage.getItem('user'))){
+            toast("You are already logged in.")
+            navigate('/')
+        }
+    }, [])
+
+    useEffect(() => {
+        if(isError){
+            toast.error("Invalid Credentials.")
+            toast.error(message)
+            dispatch(reset())
+        }
+    
+        if(isSuccess){
+            toast.success("Login Successful.")
+            navigate('/')
+        }
+    
+        dispatch(reset())
+        
+    }, [isError, isSuccess, message, navigate, dispatch])
 
     const onChange = (e) =>{
         setFormData((prevState)=>({
           ...prevState,
           [e.target.name]: e.target.value,
         }))
-      }
+    }
     
-      const onSubmit = (e) =>{
+    const onSubmit = (e) =>{
         e.preventDefault()
-    
+
         const userData = {
-          email,password
+            email,password
         }
         
         if(!email || !password){
@@ -37,13 +61,15 @@ function Login() {
         } else {
             dispatch(loginUser(userData))
         }
-      }
+    }
     
 
-      if(isLoading){
+    if(isLoading){
         return (
             <div>
-                <h1>Loading .....</h1>
+                <div className='position-absolute top-50 start-50 translate-middle'>
+                    <div className="loader"></div>
+                </div>
             </div>
         )        
     }
@@ -66,7 +92,7 @@ function Login() {
                     <input type="password" className='form-control' id='password' name='password' value={password} placeholder='Enter your password.' onChange={onChange} />
                 </div>
                 <div className="form-group">
-                    <button type="submit" className='btn btn-block' style={{border: "1px solid black"}}>Log In</button>
+                    <button type="submit" className='btn btn-outline-secondary btn-block' style={{border: "1px solid grey"}}>Log In</button>
                 </div>
                 </form>
             </section>

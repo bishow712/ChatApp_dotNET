@@ -9,12 +9,12 @@
   }
   
   ::-webkit-scrollbar-thumb {
-    background-color: #727272;
+    background-color: #b1b1b1;
     border-radius: 6px;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background-color: #555;
+    background-color: #a0a0a0;
   }
 
   .loader {
@@ -94,8 +94,12 @@
   margin-bottom: 20px;
 }
 
-.btn:hover {
-  /* transform: scale(1.2); */
+/* .btn:hover {
+  transform: scale(1.2);
   font-size: 0.98em;
   font-weight: 500;
+} */
+
+.text-smaller {
+  font-size: 1rem;
 }
