@@ -2,14 +2,18 @@ import React, { useEffect, useRef, useState } from 'react'
 import * as signalR from "@microsoft/signalr"
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom';
-import { createMessage, allUsers, getMessage, messageReceivers, reset } from '../features/message/messageSlice';
+import { createNewMessage, createMessage, allUsers, getMessage, messageReceivers, reset } from '../features/message/messageSlice';
 import { toast } from 'react-toastify';
-import { logoutUser } from '../features/user/userSlice';
+import { logoutUser, deleteUser } from '../features/user/userSlice';
 
 export default function Message() {
     const [sentMessage, setSentMessage] = useState([])
     const [messageReceiver, setMessageReceiver] = useState(null)
     const [messageToSend, setMessageToSend] = useState('')
+    const [newReceiverId, setNewReceiverId] = useState(null)
+    const [newReceiverName, setNewReceiverName] = useState('')
+    const [initialMessageToSend, setInitialMessageToSend] = useState('')
+    const [refresh, setRefresh] = useState(false)
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -29,7 +33,8 @@ export default function Message() {
         }
         dispatch(messageReceivers())
         dispatch(allUsers())
-    }, [])
+        setRefresh(false)
+    }, [createNewMessage, refresh])
 
     useEffect(()=>{
         if(messageReceiver)
@@ -80,14 +85,33 @@ export default function Message() {
         setMessageToSend("")
     }
 
+    const initialConversation = (e) => {
+        e.preventDefault()
+
+        if(!newReceiverId) {
+            toast.error("Select a person to have conversation.")
+        }
+        if(!initialMessageToSend) {
+            toast.error("Please add the message.")
+        }
+        else {
+            dispatch(createNewMessage({newReceiverId, initialMessageToSend}))
+        }
+              
+        setNewReceiverId(null)
+        setNewReceiverName('')
+        setInitialMessageToSend('')
+        setRefresh(true)
+    }
+
     const deleteAccount = () => {
         const confirmDelete = window.confirm('Are you sure you want to delete your account?');
 
         if (confirmDelete) {
-            toast("Need to work here.")
-            // dispatch()
-            // dispatch(reset())
-            // navigate('/register')
+            dispatch(deleteUser())
+            toast("Account deleted successfully.")
+            dispatch(reset())
+            navigate('/register')
         }
     }
 
@@ -96,6 +120,7 @@ export default function Message() {
 
         if (confirmLogout) {
             dispatch(logoutUser())
+            toast.success('Successfully logged out.')
             dispatch(reset())
             navigate('/login')
         }
@@ -121,15 +146,25 @@ export default function Message() {
             <button type="button" className='btn btn-outline-danger' onClick={handleLogout}>Logout</button>
         </div>
 
-        <div className="input-group mb-3 mt-3">
-            <button className="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Start a new conversation</button>
-            <ul className="dropdown-menu">
-                <li><p className="dropdown-item">Action</p></li>
-                <li><p className="dropdown-item">Another action</p></li>
-            </ul>
-            <input type="text" className="form-control" placeholder="Enter your message here to initiate the conversation." aria-label="Text input with dropdown button" />
+        <div className="input-group mb-2 mt-3 row">                       
+            <div className='col-md-4 pt-2'>
+                <button className="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">{(newReceiverName) ? `${newReceiverName}` : 'Start a new conversation'}</button>
+                <ul className="dropdown-menu">
+                    {allusers.map((m)=>(
+                        <li key={m.UserID}>
+                            <button className="dropdown-item" onClick={()=>{setNewReceiverId(m.UserID); setNewReceiverName(m.UserName)}}>{m.UserName} ({m.Email})</button>
+                        </li>
+                    ))}
+                </ul> 
+            </div>
+            <div className="col-md-8 pb-1">
+                <form action="" onSubmit={initialConversation} className='input-group mt-2' style={{ width: "100%" }}> 
+                    <input type="text" autoComplete='off' className="form-control" id='initialMessage' value={initialMessageToSend} name='message' onChange={(e)=>setInitialMessageToSend(e.target.value)} placeholder="Enter your message here to initiate the conversation."/>
+                    <button type="submit" className='input-group-text d-flex justify-content-center' style={{width: "8rem"}}>Send</button>
+                </form>
+            </div>
         </div>
-        </div>
+        </div> 
 
         <div className='d-flex'>
             <div className='rounded' style={{border: "1px solid #b1b1b1"}}>
@@ -137,9 +172,8 @@ export default function Message() {
                     messageReceiversId.includes(p.UserID) && (
                         <div className="input-group" key={p.UserID}>
                             <div>
-                                <button className='btn btn-outline-secondary' style={{border: "1px solid #b1b1b1", width: "10rem"}} onClick={() => {setMessageReceiver(p.UserID);}}>
-                                    <p><strong>Name</strong> : {p.UserName} </p>
-                                    <p><strong>Email</strong> : {p.Email} </p>
+                                <button className='btn btn-outline-secondary' style={{border: "1px solid #b1b1b1", width: "13rem"}} onClick={() => {setMessageReceiver(p.UserID);}}>
+                                    <p style={{overflowWrap: "break-word"}}>{p.UserName} ({p.Email}) </p>
                                 </button>
                             </div>                                              
                         </div>                     
@@ -147,7 +181,7 @@ export default function Message() {
                 ))}
             </div>
             
-            <div className='form-control chat-container d-flex flex-column' style={{ height: "80vh" }}>
+            <div className='form-control chat-container d-flex flex-column' style={{ height: "78vh" }}>
                 {/* <section className="mb-auto">
                     <div className='form-control'>
                         <p>User Info</p>
@@ -167,8 +201,8 @@ export default function Message() {
                                 <fieldset className="px-2 pb-2"> {/*border rounded-2*/}
                                     <legend className="float-none w-auto text-smaller"><strong>{JSON.parse(localStorage.getItem('user'))?.[0]?.name}</strong> ({p.Timestamp}) </legend>                                     
                                     {/* Icon from bootstrap */}
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-right" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5"/>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-return-right" viewBox="0 0 16 16">
+                                        <path fillRule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5"/>
                                     </svg> {p.Content}
                                 </fieldset>
                             </div>
@@ -178,8 +212,8 @@ export default function Message() {
                                 <fieldset className=" px-2 pb-2">
                                     <legend className="float-none w-auto text-smaller"><strong>{matchingUser.UserName}</strong> ({p.Timestamp})</legend>
                                     {/* Icon from bootstrap */}
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-right" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5"/>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-return-right" viewBox="0 0 16 16">
+                                        <path fillRule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5"/>
                                     </svg> {p.Content}
                                 </fieldset>
                             </div>
@@ -189,7 +223,15 @@ export default function Message() {
                 </div>
                 <div>
                     {sentMessage.map((p) => (
-                        <p><strong>{JSON.parse(localStorage.getItem('user'))?.[0]?.name}</strong> : {p.content}</p>
+                        <div className='pt-3'>
+                            <fieldset className=" px-2 pb-2">
+                                <legend className="float-none w-auto text-smaller"><strong>{JSON.parse(localStorage.getItem('user'))?.[0]?.name}</strong> (Recent) </legend>
+                                {/* Icon from bootstrap */}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-return-right" viewBox="0 0 16 16">
+                                    <path fillRule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5"/>
+                                </svg> {p.content}
+                            </fieldset>
+                        </div>
                     ))}
                 </div>
                 </section>
@@ -203,6 +245,5 @@ export default function Message() {
             </div>
         </div>
         </>
-
     )
 }

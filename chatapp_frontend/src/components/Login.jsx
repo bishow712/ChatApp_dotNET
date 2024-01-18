@@ -98,7 +98,7 @@ function Login() {
             </section>
 
             <section className='text-center mt-4'>
-                <p className=''>Register another account. <Link to='/register' className='link-offset-2 link-opacity-75-hover'>Register Here</Link></p>
+                <p className=''>Register an account. <Link to='/register' className='link-offset-2 link-opacity-75-hover'>Register Here</Link></p>
                 <p>Don't want to login. <Link to='/groupmessage' className='link-offset-2 link-opacity-75-hover'>Join Group Message</Link></p>
             </section>
         </div>

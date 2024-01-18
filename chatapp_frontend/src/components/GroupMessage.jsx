@@ -87,7 +87,8 @@ export default function GroupMessage() {
     if(isSuccess){
         return (           
             <div>      
-                <section className='text-center mt-2 d-flex justify-content-around'>
+                <section className='text-center mt-3 d-flex justify-content-around'>
+                    <h2>Group Message !!</h2>
                     <p>Don't have an account. <br /> <Link to='/register' className='link-offset-2 link-opacity-75-hover'>Register Here</Link></p>
                     {(JSON.parse(localStorage.getItem('user'))) 
                     ? <p>You are logged in. <br /> <Link to='/' className='link-offset-2 link-opacity-75-hover'>Visit Your Messagebox</Link></p> 
@@ -100,7 +101,7 @@ export default function GroupMessage() {
                     <input type="text" autoComplete="off" className='form-control' id='senderName' name='senderName' value={senderName} placeholder='Enter your name.' onChange={(e)=>setSenderName(e.target.value)} />
                 </div>
 
-                <div style={{height: '70vh', overflowY: 'auto'}} ref={chatContainerRef}>
+                <div className="rounded" style={{border: "1px solid #b1b1b1", height: '70vh', overflowY: 'auto'}} ref={chatContainerRef}>
                 <div>
                     {getGroupMessage.map((m)=>(
                         <div className='pt-3'>

@@ -12,10 +12,17 @@ const initialState = {
     errorMessage: '',
 }
 
+export const createNewMessage = createAsyncThunk('message/create', async ({newReceiverId, initialMessageToSend}, thunkAPI)=>{
+    try {
+        return await messageService.createMessage(newReceiverId, initialMessageToSend)
+    } catch (error) {
+        const message = (error.response && error.response.data && error.response.data.message) || error.message || error.message || error.toString()
+        return thunkAPI.rejectWithValue(message)
+    }
+})
+
 export const createMessage = createAsyncThunk('message/create', async ({messageReceiver, messageToSend}, thunkAPI)=>{
     try {
-        console.log(messageReceiver)
-        console.log(messageToSend)
         return await messageService.createMessage(messageReceiver, messageToSend)
     } catch (error) {
         const message = (error.response && error.response.data && error.response.data.message) || error.message || error.message || error.toString()
