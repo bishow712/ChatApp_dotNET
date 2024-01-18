@@ -31,9 +31,11 @@ export default function Message() {
         if(!loggedInUser){
             navigate('/login')
         }
-        dispatch(messageReceivers())
-        dispatch(allUsers())
-        setRefresh(false)
+        else {
+            dispatch(messageReceivers())
+            dispatch(allUsers())
+            setRefresh(false)
+        }
     }, [createNewMessage, refresh])
 
     useEffect(()=>{
@@ -41,6 +43,7 @@ export default function Message() {
             dispatch(getMessage(messageReceiver))
     }, [messageReceiver]) 
 
+    // Scroll to the bottom(recent conversation) in the message box
     const chatContainerRef = useRef();
     useEffect(() => {
         // Check if ref and ref.current are defined before accessing scrollHeight
@@ -50,6 +53,7 @@ export default function Message() {
         }
     }, [messages, sentMessage]);
 
+    // WebSocket using SignalR(dotNet Library)
     useEffect(()=>{
         const connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7034/messageHub").build();
 
@@ -69,6 +73,7 @@ export default function Message() {
         };
     }, [])
 
+    // Sending the message
     const onSubmit = (e) => {
         e.preventDefault()
 
@@ -85,6 +90,7 @@ export default function Message() {
         setMessageToSend("")
     }
 
+    // Initiating the conversation with a new account
     const initialConversation = (e) => {
         e.preventDefault()
 
@@ -104,6 +110,7 @@ export default function Message() {
         setRefresh(true)
     }
 
+    // Delete the logged In account
     const deleteAccount = () => {
         const confirmDelete = window.confirm('Are you sure you want to delete your account?');
 
@@ -115,6 +122,7 @@ export default function Message() {
         }
     }
 
+    // Logout
     const handleLogout = () => {
         const confirmLogout = window.confirm('Are you sure you want to logout?');
 
@@ -139,6 +147,8 @@ export default function Message() {
     return (
         <>
         <div>
+
+        {/* Header */}
         <div className='mt-3 d-flex justify-content-evenly'>
             <h3>Welcome, {JSON.parse(localStorage.getItem('user'))?.[0]?.name} !!</h3>
             <button type="button" className='btn btn-outline-secondary' onClick={()=> navigate('/groupmessage')}>Group Message</button>
@@ -146,6 +156,7 @@ export default function Message() {
             <button type="button" className='btn btn-outline-danger' onClick={handleLogout}>Logout</button>
         </div>
 
+        {/* Start a new conversation with a new account */}
         <div className="input-group mb-2 mt-3 row">                       
             <div className='col-md-4 pt-2'>
                 <button className="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">{(newReceiverName) ? `${newReceiverName}` : 'Start a new conversation'}</button>
@@ -166,6 +177,7 @@ export default function Message() {
         </div>
         </div> 
 
+        {/* Peoples you are having conversation with */}
         <div className='d-flex'>
             <div className='rounded' style={{border: "1px solid #b1b1b1"}}>
                 {allusers.map((p) => (
@@ -181,7 +193,8 @@ export default function Message() {
                 ))}
             </div>
             
-            <div className='form-control chat-container d-flex flex-column' style={{ height: "78vh" }}>
+            {/* Actual Conversation / Messages Box */}
+            <div className='form-control chat-container d-flex flex-column' style={{ height: "70vh" }}>
                 {/* <section className="mb-auto">
                     <div className='form-control'>
                         <p>User Info</p>
@@ -221,7 +234,9 @@ export default function Message() {
                         ))} 
                     </div>}                                      
                 </div>
-                <div>
+
+                {/* Sent message. Real time message update. */}
+                <div>                    
                     {sentMessage.map((p) => (
                         <div className='pt-3'>
                             <fieldset className=" px-2 pb-2">
@@ -236,6 +251,7 @@ export default function Message() {
                 </div>
                 </section>
 
+                {/* Place to write message and send. */}
                 <section className="mt-auto">
                 <form action="" onSubmit={onSubmit} className='input-group mt-2' style={{ width: "100%" }}>                            
                     <input type="text" autoComplete="off" className='form-control' id='message' value={messageToSend} name='message' onChange={(e)=>setMessageToSend(e.target.value)} placeholder='Enter your message.'/>
