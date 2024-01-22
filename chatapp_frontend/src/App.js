@@ -13,7 +13,7 @@ function App() {
   return (
     <>
     <Router>
-      <div className='container'>
+      <div className='container' style={{zIndex:"100"}}>
         <Routes>
           <Route path="/register" element={<Registration />}/>
           <Route path="/login" element={<Login />}/>

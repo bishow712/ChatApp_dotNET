@@ -9,6 +9,7 @@
       name="description"
       content="Web site created using create-react-app"
     />
+    <link rel="stylesheet" href="style.css" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
@@ -28,6 +29,20 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <!-- particles.js container -->
+    <div id="particles-js" style="z-index: -1;"></div>
+    <!-- stats - count particles -->
+    <div class="count-particles">
+      <span class="js-count-particles"></span>
+    </div>
+    <!-- particles.js lib - https://github.com/VincentGarreau/particles.js -->
+    <script src="http://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <!-- stats.js lib -->
+    <script src="http://threejs.org/examples/js/libs/stats.min.js"></script>
+
+    <script src="./main.js"></script>
+
     <div id="root"></div>
     <!--
       This HTML file is a template.
